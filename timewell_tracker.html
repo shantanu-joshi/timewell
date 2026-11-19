@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timewell — Personal Time & Goal Tracker</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--ink:#182033;--muted:#778096;--line:#e8ebf2;--accent:#6658e8;--green:#15966b;--red:#d65353;--shadow:0 8px 28px rgba(30,40,70,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+.wrap{max-width:1080px;margin:auto;padding:32px 20px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}.brand{font-size:23px;font-weight:800;letter-spacing:-.7px}.brand span{color:var(--accent)}.date{color:var(--muted);font-size:13px}
+h1{font-size:30px;letter-spacing:-1px;margin:0 0 5px}.sub{color:var(--muted);margin:0 0 24px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}.stat,.panel,.item{background:var(--card);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}.stat{padding:17px 19px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:25px;margin-top:4px;letter-spacing:-.5px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{padding:20px}.panel h2{font-size:17px;margin:0 0 15px}.tabs{display:flex;gap:8px;margin-bottom:16px}.tab{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:650}.tab.active{background:#efedff;color:var(--accent);border-color:#dedaff}
+label{display:block;font-size:12px;font-weight:700;color:#687187;margin:12px 0 5px}input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;outline:none;background:#fff;color:var(--ink)}input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #6658e81c}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}.btn:hover{filter:brightness(.96)}.btn.secondary{background:#f0efff;color:var(--accent)}.btn.danger{background:#fff0f0;color:var(--red)}.btn.green{background:var(--green)}.btn.small{padding:7px 10px;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.hint{font-size:12px;color:var(--muted);margin-top:8px}
+.list{display:grid;gap:11px}.item{padding:15px 16px;box-shadow:none}.itemhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.itemtitle{font-weight:750}.meta{font-size:12px;color:var(--muted);margin-top:3px}.timer{font-size:25px;font-weight:800;letter-spacing:-.6px;margin:10px 0 3px;font-variant-numeric:tabular-nums}.pill{font-size:11px;font-weight:750;padding:4px 8px;border-radius:30px;background:#efedff;color:var(--accent);white-space:nowrap}.pill.done{background:#e7f7f0;color:var(--green)}.pill.late{background:#fff0f0;color:var(--red)}
+.progress{height:8px;background:#edf0f5;border-radius:20px;overflow:hidden;margin:12px 0 7px}.bar{height:100%;background:var(--accent);border-radius:20px;transition:width .2s}.goalfoot{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.empty{border:1px dashed #d9deea;border-radius:13px;padding:22px;text-align:center;color:var(--muted);font-size:13px}.section{margin-top:24px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.sectionhead h2{font-size:18px;margin:0}.hidden{display:none!important}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:28px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:20px}.wrap{padding:22px 14px 45px}h1{font-size:26px}}
+@media(max-width:390px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:span 2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><div class="brand">time<span>well</span></div><div class="date" id="today"></div></header>
+  <h1>Make time count.</h1><p class="sub">Track what you're doing now and keep your bigger goals moving.</p>
+  <section class="stats">
+    <div class="stat"><small>Time tracked today</small><strong id="todayTime">0m</strong></div>
+    <div class="stat"><small>Active timer</small><strong id="activeCount">None</strong></div>
+    <div class="stat"><small>Goals in progress</small><strong id="goalCount">0</strong></div>
+  </section>
+  <div class="layout">
+    <section class="panel">
+      <h2>Add something to track</h2>
+      <div class="tabs"><button class="tab active" id="activityTab" type="button">Timed activity</button><button class="tab" id="goalTab" type="button">Big goal</button></div>
+      <form id="activityForm">
+        <label for="activityName">What are you doing?</label><input id="activityName" maxlength="80" placeholder="e.g. Practising Java" required>
+        <div class="hint">Starts a live stopwatch. Complete it when you're finished.</div>
+        <div class="actions"><button class="btn" type="submit">Start activity</button></div>
+      </form>
+      <form id="goalForm" class="hidden">
+        <label for="goalName">What do you want to complete?</label><input id="goalName" maxlength="80" placeholder="e.g. Finish Playwright playlist" required>
+        <div class="row">
+          <div><label for="goalDate">Target completion date</label><input id="goalDate" type="date" required></div>
+          <div><label for="goalTotal">Total steps (optional)</label><input id="goalTotal" type="number" min="1" max="100000" placeholder="e.g. 40"></div>
+        </div>
+        <label for="goalUnit">What are the steps called?</label><input id="goalUnit" maxlength="25" placeholder="e.g. videos, chapters, modules" value="steps">
+        <div class="actions"><button class="btn" type="submit">Create goal</button></div>
+        <div class="hint">You can also create a goal without steps and simply mark it complete.</div>
+      </form>
+    </section>
+    <section class="panel">
+      <h2>Currently running</h2><div id="runningList" class="list"><div class="empty">No active activity. Start one when you begin.</div></div>
+      <div class="hint">Your timer keeps its start time if you refresh or close this page.</div>
+    </section>
+  </div>
+  <section class="section">
+    <div class="sectionhead"><h2>My goals</h2><span class="meta">Deadlines & progress</span></div>
+    <div id="goalList" class="list"><div class="empty">No goals yet. Add a big goal to get started.</div></div>
+  </section>
+  <section class="section">
+    <div class="sectionhead"><h2>Today's activity history</h2><span class="meta">Completed sessions</span></div>
+    <div id="historyList" class="list"><div class="empty">Completed activities will appear here.</div></div>
+  </section>
+  <footer>Your data is saved in this browser on this device. Export/backup and cross-device sync can be added later.</footer>
+</div>
+<script>
+const KEY='timewell-v1';
+let data=JSON.parse(localStorage.getItem(KEY)||'{"running":[],"sessions":[],"goals":[]}');
+const $=id=>document.getElementById(id);
+const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
+const pad=n=>String(n).padStart(2,'0');
+const duration=ms=>{let s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;return h?`${pad(h)}:${pad(m)}:${pad(sec)}`:`${pad(m)}:${pad(sec)}`};
+const dateKey=d=>{let x=new Date(d);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`};
+const fmt=d=>new Date(d).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+function daysLeft(date){let a=new Date();a.setHours(0,0,0,0);let b=new Date(date+'T00:00:00');return Math.ceil((b-a)/86400000)}
+function render(){
+ const now=Date.now(),today=dateKey(now);
+ $('today').textContent=new Date().toLocaleDateString([], {weekday:'long',month:'long',day:'numeric',year:'numeric'});
+ const mins=data.sessions.filter(s=>dateKey(s.start)===today).reduce((n,s)=>n+(s.end-s.start),0)+data.running.filter(s=>dateKey(s.start)===today).reduce((n,s)=>n+(now-s.start),0);
+ $('todayTime').textContent=mins<60000?'0m':`${Math.floor(mins/3600000)}h ${Math.floor(mins%3600000/60000)}m`;
+ $('activeCount').textContent=data.running.length?data.running.length:'None';
+ $('goalCount').textContent=data.goals.filter(g=>!g.done).length;
+ $('runningList').innerHTML=data.running.length?data.running.map(s=>`<article class="item"><div class="itemhead"><div><div class="itemtitle">${esc(s.name)}</div><div class="meta">Started ${fmt(s.start)}</div></div><span class="pill">LIVE</span></div><div class="timer">${duration(now-s.start)}</div><button class="btn green small" onclick="completeActivity('${s.id}')">Complete activity</button></article>`).join(''):'<div class="empty">No active activity. Start one when you begin.</div>';
+ $('goalList').innerHTML=data.goals.length?data.goals.map(g=>{let left=daysLeft(g.date),pct=g.total?Math.min(100,Math.round(g.doneSteps/g.total*100)):0,remaining=Math.max(0,g.total-g.doneSteps),pace=left>0&&g.total?Math.ceil(remaining/left):remaining,created=g.createdAt||dateKey(Date.now()),span=Math.max(1,Math.ceil((new Date(g.date+'T00:00:00')-new Date(created+'T00:00:00'))/86400000)),elapsed=Math.max(0,Math.min(span,Math.ceil((new Date(dateKey(Date.now())+'T00:00:00')-new Date(created+'T00:00:00'))/86400000))),expected=g.total?Math.floor(g.total*elapsed/span):0,onTrack=g.doneSteps>=expected;return `<article class="item"><div class="itemhead"><div><div class="itemtitle">${esc(g.name)}</div><div class="meta">Target: ${new Date(g.date+'T00:00:00').toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'})}</div></div><span class="pill ${g.completed?'done':left<0?'late':''}">${g.completed?'COMPLETED':left<0?`${Math.abs(left)} days overdue`:left===0?'Due today':`${left} days left`}</span></div>${g.total?`<div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="goalfoot"><span>${g.doneSteps} / ${g.total} ${esc(g.unit)}</span><strong>${pct}%</strong></div><div class="goalfoot" style="margin-top:9px"><span>Required pace: <b>${left>0?pace+' '+esc(g.unit)+'/day':remaining+' '+esc(g.unit)+' remaining'}</b></span><strong style="color:${onTrack?'var(--green)':'var(--red)'}">${g.completed?'Finished':onTrack?'On track':'Behind pace'}</strong></div>`:`<div class="meta" style="margin:10px 0">No step count set</div>`}<div class="actions">${g.total&&!g.completed?`<button class="btn secondary small" onclick="stepGoal('${g.id}',-1)">−</button><button class="btn secondary small" onclick="stepGoal('${g.id}',1)">+1 ${esc(g.unit)}</button>`:''}${!g.completed?`<button class="btn green small" onclick="finishGoal('${g.id}')">Mark complete</button>`:`<button class="btn secondary small" onclick="reopenGoal('${g.id}')">Reopen</button>`}<button class="btn danger small" onclick="deleteGoal('${g.id}')">Delete</button></div></article>`}).join(''):'<div class="empty">No goals yet. Add a big goal to get started.</div>';
+ const hist=data.sessions.filter(s=>dateKey(s.start)===today).slice().reverse();
+ $('historyList').innerHTML=hist.length?hist.map(s=>`<article class="item"><div class="itemhead"><div><div class="itemtitle">${esc(s.name)}</div><div class="meta">${fmt(s.start)} – ${fmt(s.end)}</div></div><span class="pill done">${duration(s.end-s.start)}</span></div></article>`).join(''):'<div class="empty">Completed activities will appear here.</div>';
+}
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function id(){return Math.random().toString(36).slice(2,10)}
+$('activityTab').onclick=()=>{ $('activityTab').classList.add('active');$('goalTab').classList.remove('active');$('activityForm').classList.remove('hidden');$('goalForm').classList.add('hidden')};
+$('goalTab').onclick=()=>{ $('goalTab').classList.add('active');$('activityTab').classList.remove('active');$('goalForm').classList.remove('hidden');$('activityForm').classList.add('hidden')};
+$('activityForm').onsubmit=e=>{e.preventDefault();let name=$('activityName').value.trim();if(!name)return;data.running.push({id:id(),name,start:Date.now()});$('activityName').value='';save();render()};
+$('goalForm').onsubmit=e=>{e.preventDefault();let name=$('goalName').value.trim(),date=$('goalDate').value,total=parseInt($('goalTotal').value,10)||0;if(!name||!date)return;if(total<0)return;data.goals.push({id:id(),name,date,total,unit:$('goalUnit').value.trim()||'steps',doneSteps:0,createdAt:dateKey(Date.now()),completed:false});$('goalName').value='';$('goalTotal').value='';save();render()};
+window.completeActivity=id=>{let i=data.running.findIndex(s=>s.id===id);if(i<0)return;let s=data.running.splice(i,1)[0];data.sessions.push({...s,end:Date.now()});save();render()};
+window.stepGoal=(id,delta)=>{let g=data.goals.find(g=>g.id===id);if(!g)return;g.doneSteps=Math.max(0,Math.min(g.total,g.doneSteps+delta));save();render()};
+window.finishGoal=id=>{let g=data.goals.find(g=>g.id===id);if(g){g.completed=true;if(g.total)g.doneSteps=g.total;save();render()}};
+window.reopenGoal=id=>{let g=data.goals.find(g=>g.id===id);if(g){g.completed=false;save();render()}};
+window.deleteGoal=id=>{if(confirm('Delete this goal?')){data.goals=data.goals.filter(g=>g.id!==id);save();render()}};
+render();setInterval(render,1000);
+</script>
+</body></html>
